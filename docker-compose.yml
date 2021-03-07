@@ -1,0 +1,38 @@
+version: '3.9'
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: 'gitlab'
+    restart: always
+    hostname: '$GITLAB_HOST'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        gitlab_rails['gitlab_email_enabled'] = true
+        gitlab_rails['gitlab_email_from'] = '$GITLAB_EMAIL'
+        gitlab_rails['gitlab_email_display_name'] = '$GITLAB_EMAIL_DISPLAY_NAME'
+        gitlab_rails['gitlab_email_reply_to'] = '$GITLAB_EMAIL_REPLY_TO'
+        gitlab_rails['gitlab_email_subject_suffix'] = ''
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = '$SMTP_ADDRESS'
+        gitlab_rails['smtp_port'] = $SMTP_PORT
+        gitlab_rails['smtp_authentication'] = 'plain'
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['smtp_user_name'] = '$SMTP_USER_NAME'
+        gitlab_rails['smtp_password'] = '$SMTP_PASSWORD'
+        gitlab_rails['smtp_domain'] = '$SMTP_DOMAIN'
+        gitlab_rails['gitlab_shell_ssh_port'] = $GITLAB_SSH_PORT_MAPPING
+    ports:
+      - $GITLAB_HTTP_PORT_MAPPING:80
+      - $GITLAB_HTTPS_PORT_MAPPING:443
+      - $GITLAB_SSH_PORT_MAPPING:22
+    volumes:
+      - '$GITLAB_HOME/config:/etc/gitlab'
+      - '$GITLAB_HOME/logs:/var/log/gitlab'
+      - '$GITLAB_HOME/data:/var/opt/gitlab'
+  gitlab-runner:
+    image: 'gitlab/gitlab-runner:latest'
+    container_name: 'gitlab-runner'
+    restart: always
+    volumes:
+    - '$GITLAB_HOME/gitlab-runner/config:/etc/gitlab-runner'
+    - '/var/run/docker.sock:/var/run/docker.sock'
